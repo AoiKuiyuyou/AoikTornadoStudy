@@ -1,0 +1,1208 @@
+# ----- Main function -----
+__main__.main
+
+    # ----- Create application -----
+    # 6NIVC
+    #
+    tornado.web.Application.__init__
+
+        # ----- Add URL-to-handler mappings -----
+        tornado.web.Application.add_handlers
+
+    # ----- Get event loop -----
+    tornado.ioloop.IOLoop.current
+
+        # ----- Create event loop -----
+        tornado.ioloop.IOLoop.instance
+
+            # ----- Call `__new__` -----
+            tornado.ioloop.IOLoop -> tornado.util.Configurable.__new__
+
+                # ----- Call `initialize` -----
+                tornado.platform.select.SelectIOLoop.initialize
+
+                    # ----- Create event selector -----
+                    tornado.platform.select._Select.__init__
+
+                    # ----- Call `initialize` -----
+                    tornado.platform.select.SelectIOLoop -> tornado.ioloop.PollIOLoop.initialize
+
+                        # ----- Call super method -----
+                        tornado.platform.select.SelectIOLoop -> tornado.ioloop.IOLoop.initialize
+
+                        # ----- Create event loop waker -----
+                        # Waker is used to wake up event loop from polling in case some immediate work
+                        # needs be run in the event loop.
+                        #
+                        tornado.platform.common.Waker.__init__
+
+                            # ----- Create writer socket -----
+                            socket.socket.__init__
+
+                            # ----- Enable `TCP_NODELAY` on writer socket -----
+                            socket.socket.setsockopt
+
+                            # ----- Create listening socket -----
+                            socket.socket.__init__
+
+                            # ----- Bind listening socket -----
+                            socket.socket.bind
+
+                            # ----- Start listening socket listening -----
+                            socket.socket.listen
+
+                            # ----- Connect writer socket to listening socket -----
+                            socket.socket.connect
+
+                            # ----- Accept connection on listening socket -----
+                            socket.socket.accept
+
+                                # ----- Create connection socket -----
+                                # The connection socket is used as reader socket.
+                                #
+                                socket.socket.__init__
+
+                            # ----- Set reader socket be non-blocking -----
+                            socket.socket.setblocking
+
+                            # ----- Set writer socket be non-blocking -----
+                            socket.socket.setblocking
+
+                            # ----- Close listening socket -----
+                            socket.socket.close
+
+                        # ===== Create `Waker` =====
+
+                        # ----- Register read event handler to event loop -----
+                        # The handler is a lambda function that calls
+                        # `tornado.platform.common.Waker.consume`.
+                        #
+                        tornado.platform.select.SelectIOLoop -> tornado.ioloop.PollIOLoop.add_handler
+
+                            # ----- Register file descriptor to selector -----
+                            tornado.platform.select._Select.register
+
+                        # =====  tornado.ioloop.PollIOLoop.add_handler =====
+
+                    # ===== tornado.platform.select.SelectIOLoop -> tornado.ioloop.PollIOLoop.initialize =====
+
+                # ===== tornado.platform.select.SelectIOLoop.initialize =====
+
+            # ===== tornado.util.Configurable.__new__ =====
+
+        # ===== tornado.ioloop.IOLoop.instance =====
+
+    # ===== tornado.ioloop.IOLoop.current =====
+
+    # ----- Call `listen` -----
+    tornado.web.Application.listen
+
+        # ----- Create `HTTPServer` -----
+        # 5ILOR
+        #
+        tornado.httpserver.HTTPServer -> tornado.util.Configurable.__new__
+
+            # ----- Initialize `HTTPServer` -----
+            # 6GLPG
+            #
+            # Argument `request_callback` is `tornado.web.Application` instance created at
+            # 6NIVC.
+            #
+            tornado.httpserver.HTTPServer.initialize
+
+                # ----- Call super constructor -----
+                tornado.httpserver.HTTPServer -> tornado.tcpserver.TCPServer.__init__
+
+        # ===== tornado.util.Configurable.__new__ =====
+
+        # ----- Call constructor -----
+        # The constructor is empty. Initialization is done in
+        # `tornado.httpserver.HTTPServer.initialize`.
+        #
+        tornado.httpserver.HTTPServer.__init__
+
+        # ----- Call `listen` -----
+        tornado.httpserver.HTTPServer -> tornado.tcpserver.TCPServer.listen
+
+            # ----- Create and bind listening socket -----
+            tornado.netutil.bind_sockets
+
+                # ----- Create listening socket -----
+                socket.socket.__init__
+
+                # ----- Set listening socket be non-blocking -----
+                socket.socket.setblocking
+
+                # ----- Bind listening socket -----
+                socket.socket.bind
+
+                # ----- Start listening socket listening -----
+                socket.socket.listen
+
+            # ===== tornado.netutil.bind_sockets =====
+
+            # ----- Call `add_sockets` -----
+            tornado.httpserver.HTTPServer -> tornado.tcpserver.TCPServer.add_sockets
+
+                # ----- Create and register read event handler to accept new connections -----
+                # 5JCNQ
+                #
+                # The handler is function `accept_handler` created inside `add_accept_handler`.
+                # It will accept multiple connections in one call. For each connection, it
+                # calls `tornado.httpserver.HTTPServer._handle_connection` to handle.
+                #
+                tornado.netutil.add_accept_handler
+
+                    # ----- Register read event handler to event loop -----
+                    tornado.platform.select.SelectIOLoop -> tornado.ioloop.PollIOLoop.add_handler
+
+                        # ----- Register file descriptor to selector -----
+                        tornado.platform.select._Select.register
+
+                    # ===== tornado.ioloop.PollIOLoop.add_handler =====
+
+                # ===== tornado.netutil.add_accept_handler =====
+
+            # ===== tornado.tcpserver.TCPServer.add_sockets =====
+
+        # ===== tornado.tcpserver.TCPServer.listen =====
+
+    # ===== tornado.web.Application.listen =====
+
+    # ----- Start event loop -----
+    # This function runs until the event loop is stopped.
+    #
+    tornado.platform.select.SelectIOLoop -> tornado.ioloop.PollIOLoop.start
+
+        # ----- Event loop polls events -----
+        # 6WQZO
+        #
+        tornado.platform.select._Select.poll
+
+            # ---- Poll events -----
+            select.select
+
+        # ===== Event loop polls events =====
+
+        # ----- Event loop calls event handler -----
+        # The event handler is registered at 5JCNQ.
+        #
+        # Notice the event handler is an inner function that is not traced so there is
+        # no indentation for it in the log.
+
+            # ---- Accept connection -----
+            socket.socket.accept
+
+                # ---- Create connection socket -----
+                socket.socket.__init__
+
+            # ----- Call _handle_connection -----
+            tornado.httpserver.HTTPServer -> tornado.tcpserver.TCPServer._handle_connection
+
+                # ----- Create `IOStream` -----
+                tornado.iostream.IOStream.__init__
+
+                    # ----- Set connection socket be non-blocking -----
+                    socket.socket.setblocking
+
+                    # ----- Call super method -----
+                    tornado.iostream.IOStream -> tornado.iostream.BaseIOStream.__init__
+
+                # ----- Call `handle_stream` -----
+                tornado.httpserver.HTTPServer.handle_stream
+
+                    # ----- Create `_HTTPRequestContext` -----
+                    tornado.httpserver._HTTPRequestContext.__init__
+
+                    # ----- Create `HTTP1ServerConnection` -----
+                    tornado.http1connection.HTTP1ServerConnection.__init__
+
+                    # ----- Call `start_serving` -----
+                    # Argument `delegate` is the `tornado.httpserver.HTTPServer` instance created
+                    # at 5ILOR.
+                    #
+                    tornado.http1connection.HTTP1ServerConnection.start_serving
+
+                        # ----- Call `_server_request_loop` coroutine wrapper -----
+                        # Argument `delegate` is the `tornado.httpserver.HTTPServer` instance created
+                        # at 5ILOR.
+                        #
+                        # The coroutine wrapper is created by decorator `tornado.gen.routine`.
+                        #
+                        # The coroutine wrapper creates and ticks the wrapped coroutine for the first
+                        # time, for shortcut purpose. If the wrapped coroutine not terminates after the
+                        # first tick, it will be wrapped in `tornado.gen.Runner`.
+                        #
+                        # `tornado.gen.Runner` implements an asynchronous loop that supports waiting
+                        # on the future object yielded by the wrapped coroutine. In each round it
+                        # ticks the coroutine, adds done callback to the yielded future object, and
+                        # later when the future object is resolved and the done callback is called,
+                        # it ticks the coroutine again by sending the resolved future object's result
+                        # to the coroutine.
+                        #
+                        # The coroutine wrapper returns its own future object to its caller.
+                        #
+                        # The future object will be resolved after the wrapped coroutine terminates.
+                        # Notice it is possible that when a coroutine wrapper returns, the returned
+                        # future object has been resolved already.
+                        #
+                        tornado.http1connection.HTTP1ServerConnection._server_request_loop
+
+                            # ----- Create future object for the coroutine wrapper -----
+                            # 2GWZC
+                            #
+                            tornado.concurrent.Future.__init__
+
+                            # ----- Call wrapped coroutine function to create coroutine -----
+                            # The coroutine function is the original
+                            # `tornado.http1connection.HTTP1ServerConnection._server_request_loop`.
+
+                            # ----- Tick the coroutine for the first time -----
+                            # 6EERW
+                            #
+                            # The coroutine function is the original
+                            # `tornado.http1connection.HTTP1ServerConnection._server_request_loop`.
+
+                                # ----- Create `HTTP1Connection` -----
+                                tornado.http1connection.HTTP1Connection.__init__
+
+                                # ----- Call `start_request` to create request delegate -----
+                                # 3BAP0
+                                #
+                                # The request delegate should implement the `httputil.HTTPMessageDelegate`
+                                # interface:
+                                # - headers_received(self, start_line, headers):
+                                # - data_received(self, chunk):
+                                # - finish(self):
+                                # - on_connection_close(self):
+                                #
+                                tornado.httpserver.HTTPServer.start_request
+
+                                    # ----- Create `_ServerRequestAdapter` -----
+                                    # `tornado.httpserver._ServerRequestAdapter` implements the
+                                    # `httputil.HTTPMessageDelegate` interface.
+                                    #
+                                    tornado.httpserver._ServerRequestAdapter.__init__
+
+                                        # ----- Call `tornado.httpserver.HTTPServer.request_callback.start_request` -----
+                                        # `request_callback` is `tornado.web.Application` instance injected at 6GLPG.
+                                        #
+                                        tornado.web.Application.start_request
+
+                                            # ----- Create `_RequestDispatcher` -----
+                                            # `tornado.web._RequestDispatcher` implements the
+                                            # `httputil.HTTPMessageDelegate` interface.
+                                            #
+                                            tornado.web._RequestDispatcher.__init__
+
+                                        # ===== tornado.web.Application.start_request =====
+                                        # Return value is `tornado.web._RequestDispatcher` instance.
+
+                                        # ----- Store `start_request` return value  -----
+                                        # Return value is `tornado.web._RequestDispatcher` instance.
+                                        #
+                                        # Stored in `self.delegate`
+                                        # (`tornado.httpserver._ServerRequestAdapter.delegate`).
+
+                                    # ===== tornado.httpserver._ServerRequestAdapter.__init__ =====
+
+                                # ----- Call `read_response` -----
+                                # Argument `delegate` is the request delegate created at 3BAP0.
+                                #
+                                # This function returns future object.
+                                #
+                                tornado.http1connection.HTTP1Connection.read_response
+
+                                    # ----- Call `_read_message` coroutine wrapper -----
+                                    tornado.http1connection.HTTP1Connection._read_message
+
+                                        # ----- Create future object for the coroutine wrapper -----
+                                        # 7KXJA
+                                        #
+                                        tornado.concurrent.Future.__init__
+
+                                        # ----- Call wrapped coroutine function to create coroutine -----
+                                        # The coroutine function is the original
+                                        # `tornado.http1connection.HTTP1Connection._read_message`.
+
+                                        # ----- Tick the coroutine for the first time -----
+                                        # The coroutine function is the original
+                                        # `tornado.http1connection.HTTP1Connection._read_message`.
+
+                                            # ----- Call `read_until_regex` -----
+                                            # This function returns future object.
+                                            #
+                                            tornado.iostream.IOStream -> tornado.iostream.BaseIOStream.read_until_regex
+
+                                                # ----- Call `_set_read_callback` -----
+                                                tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._set_read_callback
+
+                                                    # ----- If argument `callback` is not None -----
+
+                                                        # ----- Wrap and store the callback -----
+                                                        # Stored in `self._read_callback`
+                                                        # (tornado.iostream.BaseIOStream._read_callback).
+                                                        #
+                                                        # `self._read_callback` determines how data received are handled in
+                                                        # `_run_read_callback` at 2622U.
+
+                                                    # ===== If argument `callback` is not None =====
+
+                                                    # ----- If argument `callback` is None -----
+
+                                                        # ----- Create future object -----
+                                                        # 75TEJ
+                                                        #
+                                                        # Stored in `self._read_future`
+                                                        # (tornado.iostream.BaseIOStream._read_future)
+                                                        #
+                                                        # `self._read_future` determines how data received are handled in
+                                                        # `_run_read_callback` at 2622U.
+                                                        #
+                                                        tornado.concurrent.Future.__init__
+
+                                                    # ===== If argument `callback` is None =====
+
+                                                # ===== Call `_set_read_callback` =====
+                                                # Return value is the future object created at 75TEJ.
+
+                                                # ----- Call `_try_inline_read` -----
+                                                # 3BFEU
+                                                #
+                                                tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._try_inline_read
+
+                                                    # ----- Call streaming callback if any -----
+                                                    tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._run_streaming_callback
+
+                                                    # ----- Find matched pattern in read buffer -----
+                                                    tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._find_read_pos
+
+                                                    # ----- If matched pattern is found -----
+
+                                                        # ----- Read from buffer -----
+                                                        # Details are at 24Y2F.
+                                                        #
+                                                        tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._read_from_buffer
+
+                                                        # ----- Return -----
+
+                                                    # ===== If matched pattern is found =====
+
+                                                    # ----- If matched pattern is not found -----
+
+                                                        # ----- Call `_read_to_buffer_loop` -----
+                                                        tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._read_to_buffer_loop
+
+                                                            # ----- Read from socket to buffer -----
+                                                            tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._read_to_buffer
+
+                                                                # ----- Read from socket -----
+                                                                tornado.iostream.IOStream.read_from_fd
+
+                                                            # ----- Call streaming callback if any -----
+                                                            tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._run_streaming_callback
+
+                                                            # ----- Find matched pattern in read buffer -----
+                                                            tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._find_read_pos
+
+                                                        # ----- If matched pattern is found -----
+
+                                                            # ----- Read from buffer -----
+                                                            # 24Y2F
+                                                            #
+                                                            tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._read_from_buffer
+
+                                                                # ----- Call `_run_read_callback` -----
+                                                                # 2622U
+                                                                #
+                                                                # If argument `streaming` is true, and have `self._streaming_callback`,
+                                                                # `self._streaming_callback` will be called to handle data received.
+                                                                #
+                                                                # Else if have `self._read_future`,
+                                                                # data received will be set as `self._read_future`'s result.
+                                                                #
+                                                                # Else if have `self._read_callback`,
+                                                                # `self._read_callback` will be called to handle data received.
+                                                                #
+                                                                # Else `_maybe_add_error_listener` will be called.
+                                                                #
+                                                                tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._run_read_callback
+
+                                                                    # ----- Call `_consume` to fetch bytes up to given position -----
+                                                                    tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._consume
+
+                                                                        # ----- Merge the first chunk in read buffer -----
+                                                                        # Make the first chunk in read buffer be the bytes up to given position.
+                                                                        #
+                                                                        tornado.iostream._merge_prefix
+
+                                                                        # ----- Remove the first chunk from read buffer -----
+
+                                                                    # ===== tornado.iostream.BaseIOStream._consume =====
+                                                                    # Return value is the bytes up to given position.
+
+                                                                    # ----- Resolve future object -----
+                                                                    # Set the bytes returned by `_consume` as `self._read_future` object's result.
+                                                                    #
+                                                                    # The future object is created at 75TEJ.
+                                                                    #
+                                                                    tornado.concurrent.Future.set_result
+
+                                                                    # ----- Add read event handler to detect a closed connection -----
+                                                                    tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._maybe_add_error_listener
+
+                                                                # ===== tornado.iostream.BaseIOStream._run_read_callback =====
+                                                                # Return value is None.
+
+                                                            # ===== tornado.iostream.BaseIOStream._read_from_buffer =====
+                                                            # Return value is None.
+
+                                                            # ----- Return -----
+
+                                                        # ===== If matched pattern is found =====
+
+                                                        # ----- If matched pattern is not found -----
+                                                        # This means the read can not be completed in this call.
+
+                                                            # ----- If the stream is closed -----
+
+                                                                # ----- Call `_maybe_run_close_callback` -----
+                                                                tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._maybe_run_close_callback
+
+                                                            # ===== If the stream is closed =====
+
+                                                            # ----- If the stream is not closed -----
+
+                                                                # ----- Call `_add_io_state` -----
+                                                                # 3OSHJ
+                                                                #
+                                                                # Activate polling of read events.
+                                                                #
+                                                                # The rationale is that when a read can not be immediately completed in
+                                                                # `_try_inline_read`, upper context (`read_until_regex` in this case) will
+                                                                # return the `self._read_future` object to caller. Later when new data are
+                                                                # received in the socket, event handler `_handle_events` is called:
+                                                                #   _handle_events
+                                                                #       _handle_read
+                                                                #           _read_to_buffer_loop
+                                                                #               _read_from_buffer
+                                                                #                   _run_read_callback
+                                                                # Eventually in `_run_read_callback` at 2622U, the data received will be set as
+                                                                # the `self._read_future` object's result. This will cause the upstream
+                                                                # coroutine waiting on the `self._read_future` object (`_read_message` in this
+                                                                # case) to resume.
+                                                                #
+                                                                tornado.iostream.BaseIOStream._add_io_state
+
+                                                            # ===== If the stream is not closed =====
+
+                                                        # ===== If matched pattern is not found =====
+
+                                                    # ===== If matched pattern is not found =====
+
+                                                # ===== tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._try_inline_read =====
+                                                # Return value is None.
+
+                                            # ===== tornado.iostream.IOStream -> tornado.iostream.BaseIOStream.read_until_regex =====
+                                            # Return value is the future object created at 75TEJ.
+
+                                            # ----- Create timeout future object to wrap the future object -----
+                                            # 6EPX9
+                                            #
+                                            # The wrapped future object is created at 75TEJ.
+                                            #
+                                            tornado.gen.with_timeout
+
+                                            # ----- Yield future object -----
+                                            # Yielded future object is created at 6EPX9.
+                                            ```
+                                            header_data = yield gen.with_timeout(
+                                            ```
+
+                                        # ===== Tick the coroutine for the first time =====
+                                        # The coroutine function is the original
+                                        # `tornado.http1connection.HTTP1Connection._read_message`.
+                                        #
+                                        # Yielded value is the future object created at 6EPX9.
+
+                                        # ----- Create `Runner` to wrap the coroutine -----
+                                        # The coroutine function is the original
+                                        # `tornado.http1connection.HTTP1Connection._read_message`.
+                                        #
+                                        tornado.gen.Runner.__init__
+
+                                            # ----- Call `handle_yield` -----
+                                            # Convert value yielded by the coroutine to `self.future` object.
+                                            #
+                                            # If `self.future` object has been resolved, this function returns True to
+                                            # indicate that `tornado.gen.Runner.run` can be called immediately.
+                                            #
+                                            # If `self.future` object has not been resolved, this function adds a done
+                                            # callback to the future object in order to resume calling
+                                            # `tornado.gen.Runner.run` after the future object is resolved.
+                                            #
+                                            tornado.gen.Runner.handle_yield
+
+                                            # ----- Call `run` -----
+                                            tornado.gen.Runner.run
+
+                                                # ----- Get previous future object's result -----
+                                                # The result is from the future object created at 6EPX9.
+                                                #
+                                                tornado.concurrent.Future.result
+
+                                                # ----- Tick the coroutine -----
+                                                # The coroutine function is the original
+                                                # `tornado.http1connection.HTTP1Connection._read_message`.
+
+                                                    # ----- Resume from previous yield point -----
+                                                    ```
+                                                    header_data = yield gen.with_timeout(
+                                                    ```
+
+                                                    # ----- Call `_parse_headers` -----
+                                                    tornado.http1connection.HTTP1Connection._parse_headers
+
+                                                    # ----- Call `parse_request_start_line` -----
+                                                    tornado.httputil.parse_request_start_line
+
+                                                    # ----- Call request delegate's `headers_received` -----
+                                                    tornado.httpserver._ServerRequestAdapter.headers_received
+
+                                                        # ----- Call `headers_received` -----
+                                                        tornado.web._RequestDispatcher.headers_received
+
+                                                            # ----- Create `HTTPServerRequest` -----
+                                                            tornado.httputil.HTTPServerRequest.__init__
+
+                                                            # ----- Call `set_request` -----
+                                                            tornado.web._RequestDispatcher.set_request
+
+                                                                # ----- Call `_find_handler` -----
+                                                                tornado.web._RequestDispatcher._find_handler
+
+                                                        # ===== tornado.web._RequestDispatcher.headers_received =====
+
+                                                    # ----- Call `_read_body` -----
+                                                    # This function returns future object.
+                                                    #
+                                                    tornado.http1connection.HTTP1Connection._read_body
+
+                                                        # ----- Call `_read_fixed_body` coroutine wrapper -----
+                                                        tornado.http1connection.HTTP1Connection._read_fixed_body
+
+                                                            # ----- Create future object for the coroutine wrapper -----
+                                                            # 7IHOW
+                                                            #
+                                                            tornado.concurrent.Future.__init__
+
+                                                            # ----- Call wrapped coroutine function to create coroutine -----
+                                                            # The coroutine function is the original
+                                                            # `tornado.http1connection.HTTP1Connection._read_fixed_body`.
+
+                                                            # ----- Tick the coroutine for the first time -----
+                                                            # The coroutine function is the original
+                                                            # `tornado.http1connection.HTTP1Connection._read_fixed_body`.
+
+                                                                # ----- Call `read_bytes` -----
+                                                                # This function returns future object.
+                                                                #
+                                                                tornado.iostream.IOStream -> tornado.iostream.BaseIOStream.read_bytes
+
+                                                                    # ----- Call `_set_read_callback` -----
+                                                                    tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._set_read_callback
+
+                                                                        # ----- Create future object -----
+                                                                        # 6Y76N
+                                                                        #
+                                                                        tornado.concurrent.Future.__init__
+
+                                                                    # ===== Call `_set_read_callback` =====
+                                                                    # Return value is the future object created at 6Y76N.
+
+                                                                    # ----- Call `_try_inline_read` -----
+                                                                    # 2GEHP
+                                                                    #
+                                                                    # Details are similar to the previous `_try_inline_read` at 3BFEU.
+                                                                    # Eventually received data are set as result of the future object created at
+                                                                    # 6Y76N.
+                                                                    #
+                                                                    tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._try_inline_read
+
+                                                                # ===== Call `read_bytes` =====
+                                                                # Return value is the future object created at 6Y76N.
+
+                                                            # ===== Tick the coroutine for the first time =====
+                                                            # The coroutine function is the original
+                                                            # `tornado.http1connection.HTTP1Connection._read_fixed_body`.
+                                                            #
+                                                            # Yielded value is the future object created at 6Y76N.
+
+                                                            # ----- Create `Runner` to wrap the coroutine -----
+                                                            # The coroutine function is the original
+                                                            # `tornado.http1connection.HTTP1Connection._read_fixed_body`.
+                                                            #
+                                                            tornado.gen.Runner.__init__
+
+                                                                # ----- Call `handle_yield` -----
+                                                                # If the immediate read in `_try_inline_read` at 2GEHP can be completed, the
+                                                                # future object created at 6Y76N returned by `read_bytes` is resolved. In this
+                                                                # case, `handle_yield` will return True, and `tornado.gen.Runner.run` will be
+                                                                # called immediately.
+                                                                #
+                                                                # If the immediate read in `_try_inline_read` at 2GEHP can not be completed,
+                                                                # the future object created at 6Y76N returned by `read_bytes` is not resolved.
+                                                                # In this case, `handle_yield` will add a done callback to the future object to
+                                                                # call `tornado.gen.Runner.run` when the future object is resolved.
+                                                                #
+                                                                # Notice in this case `_add_io_state` at 3OSHJ will activate read event
+                                                                # handler. Later when new data are received in the socket, the data will
+                                                                # eventually be set as result of the future object created at 6Y76N returned by
+                                                                # `read_bytes`. The done callback added to the future object will be called,
+                                                                # and `tornado.gen.Runner.run` will be called.
+                                                                #
+                                                                tornado.gen.Runner.handle_yield
+
+                                                                # ----- Call `run` -----
+                                                                tornado.gen.Runner.run
+
+                                                                    # ----- Get previous future object's result -----
+                                                                    tornado.concurrent.Future.result
+
+                                                                    # ----- Tick the coroutine -----
+                                                                    # The coroutine function is the original
+                                                                    # `tornado.http1connection.HTTP1Connection._read_fixed_body`.
+
+                                                                        # ----- Resume from previous yield point -----
+                                                                        ```
+                                                                        body = yield self.stream.read_bytes(
+                                                                        ```
+
+                                                                        # ----- Call request delegate's `data_received` -----
+                                                                        tornado.httpserver._ServerRequestAdapter.data_received
+
+                                                                            # ----- Call `data_received` -----
+                                                                            tornado.web._RequestDispatcher.data_received
+
+                                                                        # ----- Return -----
+
+                                                                    # ===== Tick the coroutine =====
+                                                                    # The coroutine terminated.
+
+                                                                    # ----- Resolve coroutine wrapper's future object -----
+                                                                    # The future object is created at 7IHOW.
+
+                                                                # ===== tornado.gen.Runner.run =====
+
+                                                            # ===== tornado.gen.Runner.__init__ =====
+
+                                                        # ===== tornado.http1connection.HTTP1Connection._read_fixed_body =====
+                                                        # Return value is the future object created at 7IHOW.
+
+                                                    # ===== tornado.http1connection.HTTP1Connection._read_body =====
+                                                    # Return value is the future object is created at 7IHOW.
+
+                                                    # ----- Yield future object -----
+                                                    # Yielded future object is created at 7IHOW.
+                                                    ```
+                                                    ret = yield conn.read_response(request_delegate)
+                                                    ```
+
+                                                # ===== Tick the coroutine =====
+                                                # The coroutine function is the original
+                                                # `tornado.http1connection.HTTP1Connection._read_message`.
+                                                #
+                                                # Yielded value is the future object created at 7IHOW.
+
+                                                # ----- Call `handle_yield` -----
+                                                # The yielded value is the future object created at 7IHOW.
+                                                # It has been resolved already, so the coroutine can be ticked again.
+                                                #
+                                                tornado.gen.Runner.handle_yield
+
+                                                # ----- Tick the coroutine -----
+                                                # The coroutine function is the original
+                                                # `tornado.http1connection.HTTP1Connection._read_message`.
+
+                                                    # ----- Resume from previous yield point -----
+                                                    ```
+                                                    ret = yield conn.read_response(request_delegate)
+                                                    ```
+
+                                                    # ----- Create `_ExceptionLoggingContext` -----
+                                                    tornado.http1connection._ExceptionLoggingContext.__init__
+
+                                                    # ----- Call request delegate's `finish` -----
+                                                    tornado.httpserver._ServerRequestAdapter.finish
+
+                                                        # ----- Call `finish` -----
+                                                        tornado.web._RequestDispatcher.finish
+
+                                                            # ----- Call `_parse_body` -----
+                                                            tornado.httputil.HTTPServerRequest._parse_body
+
+                                                                # ----- Call `parse_body_arguments` -----
+                                                                tornado.httputil.parse_body_arguments
+
+                                                            # ----- Call `execute` -----
+                                                            # This function returns future object.
+                                                            #
+                                                            tornado.web._RequestDispatcher.execute
+
+                                                                # ----- Create `CustomRequestHandler` -----
+                                                                __main__.CustomRequestHandler -> tornado.web.RequestHandler.__init__
+
+                                                                    # ----- Call `clear` -----
+                                                                    __main__.CustomRequestHandler -> tornado.web.RequestHandler.clear
+
+                                                                    # ----- Set connection close callback -----
+                                                                    # 5AFV7
+                                                                    #
+                                                                    # The callback is `tornado.web.RequestHandler.on_connection_close`.
+                                                                    #
+                                                                    tornado.http1connection.HTTP1Connection.set_close_callback
+
+                                                                    # ----- Call `initialize` -----
+                                                                    __main__.CustomRequestHandler -> tornado.web.RequestHandler.initialize
+
+                                                                # ----- Store created request handler instance -----
+                                                                # Stored in `self.handler` (`tornado.web._RequestDispatcher.handler`).
+
+                                                                # ----- If `self.stream_request_body` is true -----
+
+                                                                    # ----- Create `_prepared_future` future object -----
+                                                                    # 387UA
+                                                                    #
+                                                                    # Stored in `self.handler._prepared_future`
+                                                                    # (`tornado.web._RequestDispatcher.handler._prepared_future`).
+
+                                                                # ----- Call `_execute` coroutine wrapper -----
+                                                                __main__.CustomRequestHandler -> tornado.web.RequestHandler._execute
+
+                                                                    # ----- Create future object for the coroutine wrapper -----
+                                                                    # 2AIHF
+                                                                    #
+                                                                    tornado.concurrent.Future.__init__
+
+                                                                    # ----- Call wrapped coroutine function to create coroutine -----
+                                                                    # The coroutine function is the original
+                                                                    # `tornado.web.RequestHandler._execute`.
+
+                                                                    # ----- Tick the coroutine for the first time -----
+                                                                    # The coroutine function is the original
+                                                                    # `tornado.web.RequestHandler._execute`.
+
+                                                                        # ----- Call `prepare` -----
+                                                                        __main__.CustomRequestHandler -> tornado.web.RequestHandler.prepare
+
+                                                                        # ----- If have `self._prepared_future` -----
+                                                                        # The future object is created at 387UA.
+
+                                                                            # ----- Resolve future object -----
+                                                                            # Set `self._prepared_future` object's result be None.
+                                                                            #
+                                                                            # The future object is created at 387UA.
+                                                                            #
+                                                                            tornado.concurrent.Future.set_result
+
+                                                                        # ----- Call `post` -----
+                                                                        __main__.CustomRequestHandler.post
+
+                                                                            # ----- Get request body from `self.request.body` -----
+
+                                                                            # ----- Write response body to write buffer -----
+                                                                            __main__.CustomRequestHandler -> tornado.web.RequestHandler.write
+
+                                                                        # ----- Call `finish` -----
+                                                                        __main__.CustomRequestHandler -> tornado.web.RequestHandler.finish
+
+                                                                            # ----- Set `Content-Length` header -----
+                                                                            __main__.CustomRequestHandler -> tornado.web.RequestHandler.set_header
+
+                                                                            # ----- Clear connection close callback -----
+                                                                            # The callback is set at 5AFV7.
+                                                                            #
+                                                                            tornado.http1connection.HTTP1Connection.set_close_callback
+
+                                                                            # ----- Flush write buffer -----
+                                                                            __main__.CustomRequestHandler -> tornado.web.RequestHandler.flush
+
+                                                                                # ----- Call `write_headers` -----
+                                                                                # This function returns future object.
+                                                                                #
+                                                                                tornado.http1connection.HTTP1Connection.write_headers
+
+                                                                                    # ----- Call `get_all` -----
+                                                                                    tornado.httputil.HTTPHeaders.get_all
+
+                                                                                    # ----- Create future object -----
+                                                                                    # 6TJWT
+                                                                                    #
+                                                                                    # Stored in `self._write_future`.
+                                                                                    # (tornado.http1connection.HTTP1Connection._write_future).
+                                                                                    #
+                                                                                    tornado.concurrent.Future.__init__
+
+                                                                                    # ----- Call `_format_chunk` -----
+                                                                                    tornado.http1connection.HTTP1Connection._format_chunk
+
+                                                                                    # ----- Call `write` -----
+                                                                                    # This function returns future object.
+                                                                                    #
+                                                                                    tornado.iostream.IOStream -> tornado.iostream.BaseIOStream.write
+
+                                                                                        # ----- Create future object -----
+                                                                                        # 5JZND
+                                                                                        #
+                                                                                        # Stored in `self._write_future`
+                                                                                        # (tornado.iostream.BaseIOStream._write_future).
+                                                                                        #
+                                                                                        tornado.concurrent.Future.__init__
+
+                                                                                        # ----- Call `_handle_write` -----
+                                                                                        tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._handle_write
+
+                                                                                            # ----- Merge the first chunk of write buffer to be at most 128KB -----
+                                                                                            tornado.iostream._merge_prefix
+
+                                                                                            # ----- Call `write_to_fd` -----
+                                                                                            tornado.iostream.IOStream.write_to_fd
+
+                                                                                            # ----- Merge the first chunk of write buffer to be the bytes sent -----
+                                                                                            tornado.iostream._merge_prefix
+
+                                                                                            # ----- Remove the first chunk from write buffer -----
+
+                                                                                            # ----- If write buffer is empty -----
+
+                                                                                                # ----- If have `self._write_callback` -----
+
+                                                                                                    # ----- Call `_run_callback` -----
+                                                                                                    tornado.platform.select.SelectIOLoop -> tornado.ioloop.IOLoop._run_callback
+
+                                                                                                # ----- If have `self._write_future` -----
+
+                                                                                                    # ----- Resolve future object -----
+                                                                                                    # The future object is created at 5JZND.
+                                                                                                    #
+                                                                                                    tornado.concurrent.Future.set_result
+
+                                                                                            # ===== If write buffer is empty =====
+
+                                                                                        # ----- If write buffer is not empty -----
+
+                                                                                            # ----- Call `_add_io_state` -----
+                                                                                            # Activate polling of write events.
+                                                                                            #
+                                                                                            # The rationale is that when a write can not be immediately completed
+                                                                                            # in `_handle_write`, upper context (`write` in this case) will return
+                                                                                            # the `self._write_future` object to caller. Later when the socket is
+                                                                                            # writable, event handler `_handle_events` is called:
+                                                                                            #   _handle_events
+                                                                                            #       _handle_write
+                                                                                            # `_handle_write` will be called to continue the writing.
+                                                                                            #
+                                                                                            tornado.iostream.BaseIOStream._add_io_state
+
+                                                                                        # ===== If write buffer is not empty =====
+
+                                                                                        # ----- Call `_maybe_add_error_listener` -----
+                                                                                        tornado.iostream.IOStream -> tornado.iostream.BaseIOStream._maybe_add_error_listener
+
+                                                                                    # ----- Store future object -----
+                                                                                    # The future object is created at 5JZND.
+                                                                                    #
+                                                                                    # Stored in `self._pending_write`
+                                                                                    # (tornado.http1connection.HTTP1Connection._pending_write).
+
+                                                                                    # ----- Add done callback to future object -----
+                                                                                    # The future object is created at 5JZND.
+                                                                                    #
+                                                                                    # The callback is `tornado.http1connection.HTTP1Connection._on_write_complete`.
+                                                                                    #
+                                                                                    tornado.concurrent.Future.add_done_callback
+
+                                                                                        # ----- Call `_on_write_complete` -----
+                                                                                        # This is called immediately if the future is resolved.
+                                                                                        #
+                                                                                        tornado.http1connection.HTTP1Connection._on_write_complete
+
+                                                                                            # ----- If have `self._write_callback` -----
+
+                                                                                                # ----- Call `add_callback` -----
+                                                                                                tornado.platform.select.SelectIOLoop -> tornado.ioloop.PollIOLoop.add_callback
+
+                                                                                            # ===== If have `self._write_callback` =====
+
+                                                                                            # ----- If have `self._write_future` -----
+
+                                                                                                # ----- Resolve future object -----
+                                                                                                # The future object is created at 6TJWT.
+                                                                                                #
+                                                                                                tornado.concurrent.Future.set_result
+
+                                                                                            # ===== If have `self._write_future` =====
+
+                                                                                        # ===== tornado.http1connection.HTTP1Connection._on_write_complete =====
+
+                                                                                    # ===== tornado.concurrent.Future.add_done_callback =====
+
+                                                                                # ===== tornado.http1connection.HTTP1Connection.write_headers =====
+                                                                                # Return value is the future object created at 6TJWT.
+
+                                                                            # ----- Close request -----
+                                                                            tornado.httputil.HTTPServerRequest.finish
+
+                                                                                # ----- Close connection -----
+                                                                                tornado.http1connection.HTTP1Connection.finish
+
+                                                                                    # ----- Enable `TCP_NODELAY` on the socket -----
+                                                                                    tornado.iostream.IOStream.set_nodelay
+
+                                                                                    # ----- If have `self._pending_write` future object -----
+
+                                                                                        # ----- Add done callback to the future object
+                                                                                        # The callback is `tornado.http1connection.HTTP1Connection._finish_request`.
+                                                                                        #
+                                                                                        tornado.concurrent.Future.add_done_callback
+
+                                                                                            # ----- Call `_finish_request -----
+                                                                                            # 2M91Z
+                                                                                            #
+                                                                                            # This is called immediately if the future object is resolved.
+                                                                                            #
+                                                                                            tornado.http1connection.HTTP1Connection._finish_request
+
+                                                                                                # ----- Call `_clear_callbacks -----
+                                                                                                tornado.http1connection.HTTP1Connection._clear_callbacks
+
+                                                                                                    # ----- Clear close callback -----
+                                                                                                    tornado.iostream.IOStream -> tornado.iostream.BaseIOStream.set_close_callback
+
+                                                                                                # ----- Disable `TCP_NODELAY` on the socket -----
+                                                                                                tornado.iostream.IOStream.set_nodelay
+
+                                                                                    # ===== If have `self._pending_write` future object =====
+
+                                                                                    # ----- If not have `self._pending_write` future object -----
+
+                                                                                        # ----- Call `_finish_request -----
+                                                                                        # Details are at 2M91Z.
+                                                                                        #
+                                                                                        tornado.http1connection.HTTP1Connection._finish_request
+
+                                                                                    # ===== If not have `self._pending_write` future object =====
+
+                                                                                # ===== tornado.http1connection.HTTP1Connection.finish =====
+                                                                                # Return value is None.
+
+                                                                            # ===== tornado.httputil.HTTPServerRequest.finish =====
+                                                                            # Return value is None.
+
+                                                                        # ===== tornado.web.RequestHandler.finish =====
+                                                                        # Return value is None.
+
+                                                                    # ===== Tick the coroutine for the first time =====
+                                                                    # The coroutine function is the original
+                                                                    # `tornado.web.RequestHandler._execute`.
+                                                                    #
+                                                                    # The coroutine terminated.
+
+                                                                    # ----- Resolve coroutine wrapper's future object -----
+                                                                    # The future object is created at 2AIHF.
+                                                                    #
+                                                                    tornado.concurrent.Future.set_result
+
+                                                                    # ----- Return coroutine wrapper's future object -----
+                                                                    # The future object is created at 2AIHF.
+
+                                                                # ===== `tornado.web.RequestHandler._execute` =====
+                                                                # Return value is the future object created at 387UA. May be None.
+
+                                                            # ===== tornado.web._RequestDispatcher.execute =====
+                                                            # Return value is the future object created at 387UA. May be None.
+                                                            #
+                                                            # The future object is not used by `tornado.web._RequestDispatcher.finish`.
+
+                                                        # ===== tornado.web._RequestDispatcher.finish =====
+                                                        # Return value is None.
+
+                                                    # ===== tornado.httpserver._ServerRequestAdapter.finish =====
+                                                    # Return value is None.
+
+                                                    # ----- Raise `tornado.gen.Return` -----
+
+                                                # ===== Tick the coroutine =====
+                                                # The coroutine function is the original
+                                                # `tornado.http1connection.HTTP1Connection._read_message`.
+                                                #
+                                                # The coroutine raised `tornado.gen.Return`.
+
+                                                # ----- Catch `tornado.gen.Return` -----
+
+                                                # ----- Resolve coroutine wrapper's future object -----
+                                                # The coroutine wrapper is
+                                                # `tornado.http1connection.HTTP1Connection._read_message`.
+                                                #
+                                                # The future object is created at 7KXJA.
+                                                #
+                                                tornado.concurrent.Future.set_result
+
+                                            # ===== tornado.gen.Runner.run =====
+
+                                        # ===== tornado.gen.Runner.__init__ =====.
+
+                                    # ===== tornado.http1connection.HTTP1Connection._read_message =====
+                                    # Return value is the future object created at 7KXJA.
+
+                                # ===== tornado.http1connection.HTTP1Connection.read_response =====
+                                # Return value is the future object created at 7KXJA.
+
+                            # ===== Tick the coroutine for the first time =====
+                            # The coroutine function is the original
+                            # `tornado.http1connection.HTTP1ServerConnection._server_request_loop`.
+                            #
+                            # Yielded value is the future object created at 7KXJA.
+
+                            # ----- Create `Runner` to wrap the coroutine -----
+                            # The coroutine function is the original
+                            # `tornado.http1connection.HTTP1ServerConnection._server_request_loop`.
+                            #
+                            tornado.gen.Runner.__init__
+
+                                # ----- Call `handle_yield` -----
+                                tornado.gen.Runner.handle_yield
+
+                                # ----- Call `run` -----
+                                tornado.gen.Runner.run
+
+                                    # ----- Get previous future object's result -----
+                                    # The result is from the future object created at 7KXJA.
+                                    #
+                                    tornado.concurrent.Future.result
+
+                                    # ----- Tick the coroutine -----
+                                    # The coroutine function is the original
+                                    # `tornado.http1connection.HTTP1ServerConnection._server_request_loop`.
+
+                                        # ----- Resume from previous yield point -----
+                                        ```
+                                        ret = yield conn.read_response(request_delegate)
+                                        ```
+
+                                        # ----- Yield future object -----
+                                        # 5OVLN
+                                        #
+                                        # Yielded future object is `tornado.gen.moment`, a resolved future object.
+                                        #
+                                        # This means `_server_request_loop` has finished one loop round, and will
+                                        # start the next round in the next event loop round.
+                                        ```
+                                        yield gen.moment
+                                        ```
+
+                                    # ===== Tick the coroutine =====
+                                    # Yielded value is the future object created at 5OVLN.
+
+                                    # ----- Call `handle_yield` -----
+                                    tornado.gen.Runner.handle_yield
+
+                                        # ----- Add done callback to the future object -----
+                                        # 3RD5C
+                                        #
+                                        # The future object is created at 5OVLN.
+                                        #
+                                        # The callback is `tornado.gen.Runner.run`.
+                                        # It will be called at 2T97R.
+                                        #
+                                        tornado.platform.select.SelectIOLoop -> tornado.ioloop.IOLoop.add_future
+
+                                    # ===== tornado.gen.Runner.handle_yield =====
+
+                                # ===== tornado.gen.Runner.run =====
+
+                            # ===== tornado.gen.Runner.__init__ =====
+
+                        # ===== tornado.http1connection.HTTP1ServerConnection._server_request_loop =====
+                        # Return value is the future object created at 2GWZC.
+
+                        # ----- Store future object -----
+                        # The future object is created at 2GWZC.
+                        #
+                        # Stored in `self._serving_future`
+                        # (`tornado.http1connection.HTTP1ServerConnection._serving_future`).
+
+                        # ----- Add done back to future object -----
+                        # The future object is created at 2GWZC.
+                        #
+                        # This aims to log error.
+                        #
+                        tornado.platform.select.SelectIOLoop -> tornado.ioloop.IOLoop.add_future
+
+                    # ===== tornado.http1connection.HTTP1ServerConnection.start_serving =====
+                    # Return value is None.
+
+                # ===== tornado.httpserver.HTTPServer.handle_stream =====
+                # Return value is None.
+
+            # ===== tornado.tcpserver.TCPServer._handle_connection =====
+            # Return value is None.
+
+        # ===== Event loop calls event handler =====
+
+        # ----- Event loop calls scheduled callbacks -----
+
+            # ----- Call `_run_callback` -----
+            tornado.platform.select.SelectIOLoop -> tornado.ioloop.IOLoop._run_callback
+
+                # ----- Call `run` -----
+                # 2T97R
+                #
+                # The callback is added at 3RD5C.
+                #
+                tornado.gen.Runner.run
+
+                    # ----- Get previous future object's result -----
+                    # The result is from the future object created at 5OVLN.
+                    #
+                    tornado.concurrent.Future.result
+
+                    # ----- Tick the coroutine -----
+                    # The coroutine function is the original
+                    # `tornado.http1connection.HTTP1ServerConnection._server_request_loop`.
+
+                        # ----- Resume from previous yield point -----
+                        ```
+                        yield gen.moment
+                        ```
+
+                        # ---- Details -----
+                        # This is the second round of the loop inside `_server_request_loop`.
+                        # The details are similar to the first round started at 6EERW.
+
+                            # ----- Raise `StreamClosedError` eventually -----
+                            # Because the stream has been closed, when `tornado.iostream.BaseIOStream._check_closed`
+                            # is eventually called, it will raise `StreamClosedError`. The error will propagate up
+                            # the coroutine chain and eventually be caught inside `_server_request_loop`.
+
+                        # ===== Details =====
+
+                    # ===== Tick the coroutine =====
+                    # The coroutine raised `StreamClosedError`.
+
+                    # ----- Catch `StreamClosedError` -----
+
+                    # ----- Resolve coroutine wrapper's future object -----
+                    # The future object is created at 2GWZC.
+
+                # ===== tornado.gen.Runner.run =====
+
+            # ===== tornado.ioloop.IOLoop._run_callback =====
+
+        # ===== Event loop calls scheduled callbacks =====
+
+        # ----- Event loop polls events -----
+        # This is the second round of the event loop.
+        # The details are similar to the first round started at 6WQZO.
+        #
+        tornado.platform.select._Select.poll
